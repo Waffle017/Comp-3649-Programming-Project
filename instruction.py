@@ -19,3 +19,28 @@ class Instruction:
         # Binary operation, dest = src1 op src2
         else:
             return f"{self.dest} = {self.src1} {self.op} {self.src2}"
+
+def readIn(filename):
+    file_path = f"/Users/scottlouden/Downloads/Github/Paradigm/{filename}"
+    lines = []
+    
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            for line in file:
+                if (line.strip() != ""):  # make sure we dont add empty lines
+                    tokens = line.split()  # Split by spaces
+                    for token in tokens: #loop through stripped tokens
+                        lines.append(token)  # Append tokens to list
+                    lines.append("")  # Add empty string between each line to mark new line
+    except FileNotFoundError:
+        print(f"File not found")
+        return None #idk if its NULL or Null or None doesn't matter much
+
+    return lines
+
+
+
+lines = readIn("programpara.txt") # reads in the file, can be changed depending on txt file name
+print(lines) #error checking 
+
+
