@@ -39,7 +39,7 @@ def readIn(filename):
                     tokens = line.split()  # Split by spaces
                     for token in tokens: #loop through stripped tokens
                         lines.append(token)  # Append tokens to list
-                    lines.append("")  # Add empty string between each line to mark new line
+                    lines.append("\n")  # Add empty string between each line to mark new line
     except FileNotFoundError:
         print(f"File not found")
         return None #idk if its NULL or Null or None doesn't matter much
