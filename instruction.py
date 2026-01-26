@@ -19,3 +19,10 @@ class Instruction:
         # Binary operation, dest = src1 op src2
         else:
             return f"{self.dest} = {self.src1} {self.op} {self.src2}"
+        
+
+class Asm_Instruction:
+    def __init__(asm, opcode, dst, src):
+        asm.opcode = opcode
+        asm.dst = dst
+        asm.src = src
