@@ -41,7 +41,35 @@ class Scanner:
                 return Token('INT', int(num_str))
 
             # variables
+            if self.current_char == 't':                 # t represents the temporary variable
+                self.next_char()
+                if not self.current_char.isdigit():
+                    pass                                  # needs to be some error
+                else:
+                 var = 't'
+                 while self.current_char.isdigit():
+                     var += self.current_char
+                     self.next_char()
 
+                return Token('VARIABLE', var)
+            
+            else:                                       # checking for other variables
+                if self.current_char.isalpha():
+                    var = self.current_char
+                    self.next_char()
+                    if self.current_char == ' ':
+                        return Token("VARAIBLE", var)
+                    else:
+                        while self.current_char.isalpha():
+                            var += self.current_char
+                            self.next_char()
+                        if var == "live":
+                            if self.current_char == ':':
+                                self.next_char()            # Eat the colon
+                                return Token("LIVE", var)
+                        else:
+                            pass                    # should return an error but idk how to yet, this means any var with 2+ characters
+                        
             # operators
             if self.current_char == '+':
                 self.next_char()
