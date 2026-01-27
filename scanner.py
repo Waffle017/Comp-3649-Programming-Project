@@ -1,3 +1,6 @@
+from instruction import readIn
+
+
 class Token:
     def __init__(self, type_, value):
         self.type = type_
@@ -8,16 +11,24 @@ class Token:
 
 class Scanner:
     def __init__(self, filename):
-        ## idk yet
+        intaken = readIn(filename)
+        if intaken is None or len(intaken) == 0:
+            self.content = ''
+            self.current_char = ''
+        else:
+            self.content = ''.join(intaken)
+            self.current_char = self.content[:1]
 
-        self.current_char = '' #initialize
-        self.next_char() #read next
+        self.index = 1
+
 
     def next_char(self):
-        #set current char to next char in the file
-
-    def peek(self):
-        #still have to do lol
+        if self.index < len(self.content):
+            self.current_char = self.content[self.index]
+            self.index += 1
+        else:
+            self.current_char = ''
+        
 
     def get_token(self):
         '''
@@ -38,7 +49,7 @@ class Scanner:
                 while self.current_char.isdigit():
                     number += self.current_char
                     self.next_char()
-                return Token('INT', int(num_str))
+                return Token('INT', int(number))
 
             # variables
 
@@ -62,3 +73,47 @@ class Scanner:
             if self.current_char == '=':
                 self.next_char()
                 return Token('ASSIGN', '=')
+            
+            if self.current_char == '':
+                self.next_char()
+                return Token('Colon', ':')
+            # skip spaces and tabs
+            if self.current_char in [' ', '\t']:
+                self.next_char()
+                continue
+
+            # handle variables (letters)
+            if self.current_char.isalpha(): #check if its a letter                
+                var_name = '' #initalize variable name
+                while self.current_char.isalnum() or self.current_char == '_': #this allows t1 etc to be variable nanmes and not just t
+                    var_name += self.current_char # adds to variable name  1 char at a time
+                    self.next_char()
+                    if self.current_char == '': #if its a space or tab -> break
+                        break
+                
+                if var_name == 'live':
+                    return Token('END', 'live') #temporarily calling it this for now
+                return Token('VAR', var_name) 
+
+            # unknown (not any of the above)
+            char = self.current_char
+            self.next_char()
+            return Token('UNKNOWN', char)
+
+        return None  
+
+#test code: this is temporarily here to test scanner
+if __name__ == "__main__":
+    scanner = Scanner("programpara.txt")
+    tokens = []
+    while True:
+        token = scanner.get_token()
+        if token is None:
+            break
+        tokens.append(token)
+        print(token)
+    
+    
+   
+
+
