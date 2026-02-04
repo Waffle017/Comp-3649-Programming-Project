@@ -50,9 +50,7 @@ class Scanner:
                     number += self.current_char
                     self.next_char()
                 return Token('INT', int(number))
-
-            # variables
-
+            
             # operators
             if self.current_char == '+':
                 self.next_char()
@@ -113,7 +111,36 @@ if __name__ == "__main__":
         tokens.append(token)
         print(token)
     
-    
+class Parser:
+    def __init__(self, filename):
+        self.scanner = Scanner(filename)
+        self.output = []
+        self.curr_token = self.scanner.get_token()
+
+
+    def match(self, expected_type):
+        if self.curr_token.type == expected_type:
+            self.curr_token = self.scanner.get_token()
+
+        else:
+            raise ValueError("Error")
+        
+    def readIntermediateCode(self):
+        while self.curr_token.type != "LIVE":
+            instruction = self.read3AddrInstruction()
+            self.output.append(instruction)
+
+        return self.output
+
+
+
+    def read3AddrInstruction(self):
+
+            
+
+
+
+            
    
 
 
