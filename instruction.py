@@ -29,11 +29,11 @@ class Asm_Instruction:
 
 
 def readIn(filename):
-    file_path = f"/Users/scottlouden/Downloads/Github/Paradigm/{filename}"
+    # file_path = f"/Users/scottlouden/Downloads/Github/Paradigm/{filename}"
     lines = []
     
     try:
-        with open(file_path, 'r', encoding='utf-8') as file:
+        with open(filename, 'r', encoding='utf-8') as file:
             for line in file:
                 if (line.strip() != ""):  # make sure we dont add empty lines
                     tokens = line.split()  # Split by spaces
