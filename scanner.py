@@ -90,7 +90,7 @@ class Scanner:
                         break
                 
                 if var_name == 'live':
-                    return Token('END', 'live') #temporarily calling it this for now
+                    return Token('LIVE', 'live') #temporarily calling it this for now
                 return Token('VAR', var_name) 
 
             # unknown (not any of the above)
@@ -99,9 +99,77 @@ class Scanner:
             return Token('UNKNOWN', char)
 
         return None  
+    
+class Parser:
+    def __init__(self, filename):
+        self.scanner = Scanner(filename)
+        self.output = []
+        self.curr_token = self.scanner.get_token()
 
-#test code: this is temporarily here to test scanner
+    #match the token then delete
+    def match(self, expected_type): 
+        if self.curr_token.type == expected_type:
+            self.curr_token = self.scanner.get_token()
+
+        else:
+            raise ValueError("Error")
+        
+    #Keep reading the tokens until LIVE
+    def readIntermediateCode(self):
+        while self.curr_token.type != "LIVE":
+            instruction = self.read3AddrInstruction() #get the single instruction
+            self.output.append(instruction) #add it to the output array 
+        
+        if self.curr_token.type == "LIVE":
+            self.match("LIVE")
+        
+        return self.output
+
+    #read the single instruction
+    def read3AddrInstruction(self):
+        count = 0 #counter for variable
+        while (self.curr_token.value != "\n"):  #keep reading the array until the \n
+            if self.curr_token.type == "VAR":   #if the value is a variable 
+                count += 1
+                if count == 1:
+                    self.dst = self.curr_token.value
+                elif count == 2:
+                    self.operant1 = self.curr_token.value
+                else:
+                    self.operant2 = self.curr_token.value
+                self.match("VAR")
+            
+            if self.curr_token.type == "ASSIGN": #consume the equal
+                self.match("ASSIGN")
+
+
+            if self.curr_token.type == "INT":   #handle integer
+                count += 1
+                if count == 2:
+                    self.operant1 = self.curr_token.value
+                else:
+                    self.operant2 = self.curr_token.value
+
+                self.match("INT")
+    
+            if self.curr_token.type == "MINUS": #handle either NEG or SUB
+                self.operator = self.curr_token.value
+                self.match("MINUS")
+
+         
+            if self.curr_token.type in ["PLUS", "MUL", "DIV"]: #handle rest of operators 
+                self.operator = self.curr_token.value
+                self.match(self.curr_token.type)
+
+        self.match("NEWLINE") #get rid of the \n in array
+        return [self.dst, self.operant1, self.operator, self.operant2]
+
+
+
+
+#test code: this is temporarily here to test scanner, uh claude did this part whoops 
 if __name__ == "__main__":
+    print("=== SCANNER TEST ===")
     scanner = Scanner("programpara.txt")
     tokens = []
     while True:
@@ -111,32 +179,33 @@ if __name__ == "__main__":
         tokens.append(token)
         print(token)
     
-class Parser:
-    def __init__(self, filename):
-        self.scanner = Scanner(filename)
-        self.output = []
-        self.curr_token = self.scanner.get_token()
-
-
-    def match(self, expected_type):
-        if self.curr_token.type == expected_type:
-            self.curr_token = self.scanner.get_token()
-
-        else:
-            raise ValueError("Error")
+    print("\n=== PARSER TEST ===")
+    try:
+        parser = Parser("programpara.txt")
+        print(f"Parser initialized. Current token: {parser.curr_token}")
         
-    def readIntermediateCode(self):
-        while self.curr_token.type != "LIVE":
-            instruction = self.read3AddrInstruction()
-            self.output.append(instruction)
+        # Add debug to readIntermediateCode
+        while parser.curr_token.type != "LIVE":
+            print(f"\nProcessing instruction, current token: {parser.curr_token}")
+            instruction = parser.read3AddrInstruction()
+            print(f"Got instruction: {instruction}")
+            parser.output.append(instruction)
+        
+        print("\nParsed Instructions:")
+        for i, instruction in enumerate(parser.output):
+            print(f"Instruction {i+1}: {instruction}")
+            if len(instruction) == 4:
+                dst, op1, operator, op2 = instruction
+                print(f"  {dst} = {op1} {operator} {op2}")
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        import traceback
+        traceback.print_exc()
 
-        return self.output
+
+         
 
 
-
-    def read3AddrInstruction(self):
-
-            
 
 
 
