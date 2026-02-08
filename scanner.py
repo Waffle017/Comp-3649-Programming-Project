@@ -108,6 +108,8 @@ class Parser:
 
     #match the token then delete
     def match(self, expected_type): 
+        if self.curr_token is None:
+            raise ValueError("ERROR")
         if self.curr_token.type == expected_type:
             self.curr_token = self.scanner.get_token()
 
@@ -116,7 +118,7 @@ class Parser:
         
     #Keep reading the tokens until LIVE
     def readIntermediateCode(self):
-        while self.curr_token.type != "LIVE":
+        while self.curr_token is not None and self.curr_token.type != "LIVE":
             instruction = self.read3AddrInstruction() #get the single instruction
             self.output.append(instruction) #add it to the output array 
         
@@ -128,7 +130,7 @@ class Parser:
     #read the single instruction
     def read3AddrInstruction(self):
         count = 0 #counter for variable
-        while (self.curr_token.value != "\n"):  #keep reading the array until the \n
+        while (self.curr_token.type != "NEWLINE"):  #keep reading the array until the \n
             if self.curr_token.type == "VAR":   #if the value is a variable 
                 count += 1
                 if count == 1:
