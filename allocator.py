@@ -41,21 +41,41 @@ def build_interference_graph(instructions, live_on_exit):
     :param instructions: List of all instructions from parser
     :param live_on_exit: List of variables live at the end
     '''
-    graph = InterferenceGraph
+    graph = InterferenceGraph()
 
     # Initialize live list with variables that were live
     current_live = list(live_on_exit)
+
+    # Add variables that are live on exit to graph
+    for variable in current_live:
+        dest_var = instruction.dest
 
     # Start loop for backwards iteration
     for instruction in reversed(instructions):
 
         # Find destination variable
+        dest = instruction.dest
 
         # Handle Assignment (dest = ...)
-            # add edges for destination variable with current live variables
-
+        # add edges for destination variable with current live variables
+        for live_variable in current_live:
+            graph.add_edge(dest, live_variable)
+            
             # kill the dest variable on assignment line IF it is in the current_live list
+        if dest in current_live:
+            current_live.remove(dest)
 
-            # add dest as a node even if it has no edges
+            # Even if no edges, add to graph
+        graph.add_node(dest)
 
-        # Handle Operands
+        # Handle binary operations and unary negations
+
+        if graph.ensure_variable(instruction.src1):
+            current_live.add(instruction.src1)
+            graph.add_node(instruction.src1)
+
+        # Check for source 2
+        if instruction.src2 and graph.ensure_variable(instruction.src2):
+            current_live.add(instruction.src2)
+            graph.add_node(instruction.src2)
+return graph
