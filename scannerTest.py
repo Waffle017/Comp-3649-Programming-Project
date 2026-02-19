@@ -81,6 +81,7 @@ d = c + t4"""
     # right amount of tokens
     if len(tokens) != len(expected_tokens):
         print(f" Wrong number of tokens: got {len(tokens)}, expected {len(expected_tokens)}")
+        all_match = False
     else:
         all_match = True
         for i in range(len(tokens)):
@@ -97,5 +98,52 @@ d = c + t4"""
         os.remove(test_filename)
     return tokens
     
+def test_missing_live_error():
+    
+    test_filename = "test_missing_live.txt"
+    # Test code WITHOUT 'live:' statement - this should be an error
+    test_code = """a = a + 1
+t1 = a * 4
+b = t1 + 2"""
+    
+    try:
+        with open(test_filename, 'w') as f:
+            f.write(test_code)
+        
+        # Create scanner and tokenize
+        scanner = Scanner(test_filename)
+        tokens = []
+        
+       
+        while True:
+            token = scanner.get_token()
+            if token is None:
+                break
+            tokens.append(token)
+
+        has_live = False
+        for token in tokens:
+            if token.type == 'END' and token.value == 'live':
+                has_live = True
+                break       
+        if  has_live == False:
+            print(" ERROR: Missing 'live:' statement")
+        
+        # Clean up test file
+        if os.path.exists(test_filename):
+            os.remove(test_filename)
+        
+        return has_live
+    
+    except Exception as e:
+        print(f"Something went wrong: {e}")
+        # Clean up test file even on error
+        if os.path.exists(test_filename):
+            os.remove(test_filename)
+        return False
+
+
 if __name__ == "__main__":
     test_scanner()
+    test_missing_live_error()
+   
