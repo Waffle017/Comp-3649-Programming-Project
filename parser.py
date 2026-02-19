@@ -30,17 +30,19 @@ class Parser:
 
     #read the single instruction
     def read3AddrInstruction(self):
-        count = 0 #counter for variable
-        while (self.curr_token.value != "\n"):  #keep reading the array until the \n
+        count = 1 #counter for variable
+        while (self.curr_token.type != "NEWLINE"):  #keep reading the array until the \n
             if self.curr_token.type == "VAR":   #if the value is a variable 
-                count += 1
-                if count == 1:
+                if count == 1: #first variable
                     self.dst = self.curr_token.value
                     if self.curr_token.value not in self.variables:  # avoid duplicates
-                        self.variables.append(self.curr_token.value)
+                        self.variables.append(self.curr_token.value)  #add to the variable list
+                    count += 1 #increment for next variable
 
                 elif count == 2:
                     self.operant1 = self.curr_token.value
+                    count += 1 
+
                 else:
                     self.operant2 = self.curr_token.value
                 self.match("VAR")
