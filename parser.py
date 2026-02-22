@@ -30,6 +30,11 @@ class Parser:
 
     #read the single instruction
     def read3AddrInstruction(self):
+        self.dst = None
+        self.operant1 = None
+        self.operant2 = None
+        self.operator = None
+
         count = 1 #counter for variable
         while (self.curr_token.type != "NEWLINE"):  #keep reading the array until the \n
             if self.curr_token.type == "VAR":   #if the value is a variable 
@@ -66,6 +71,8 @@ class Parser:
 
          
             if self.curr_token.type in ["PLUS", "MUL", "DIV"]: #handle rest of operators 
+                if self.operator is None:
+                    self.operator = self.curr_token.value
                 self.operator = self.curr_token.value
                 self.match(self.curr_token.type)
 
