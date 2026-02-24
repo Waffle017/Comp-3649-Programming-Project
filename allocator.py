@@ -8,6 +8,7 @@ p = Parser(filename)
 p.parse()
 graph = build_interference_graph(p.instructions, p.live_variables)
 graph.graph_print()
+this is the function that will be used to build the interference graph
 '''
 
 class InterferenceGraph:
