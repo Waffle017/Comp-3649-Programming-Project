@@ -49,7 +49,10 @@ class InterferenceGraph:
             print("Colouring:")
             for var in sorted(self.colouring):
                 r = self.colouring[var]
-                print(f"  {var} -> r{r}" if r is not None else f"  {var} -> spill")
+                if r is not None:
+                    print(f"  {var} -> r{r}")
+                else:
+                    print(f"  {var} -> spill")
 
 
 def build_interference_graph(instructions, live_on_exit):
