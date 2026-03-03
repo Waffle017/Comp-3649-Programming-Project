@@ -1,6 +1,6 @@
 
 from scanner import Scanner
-
+from instruction import Instruction
 
 class Parser:
     def __init__(self, filename):
@@ -77,4 +77,4 @@ class Parser:
                 self.match(self.curr_token.type)
 
         self.match("NEWLINE") #get rid of the \n in array
-        return [self.dst, self.operant1, self.operator, self.operant2]
+        return Instruction(self.dst, self.operant1, self.operator, self.operant2)

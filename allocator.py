@@ -45,7 +45,7 @@ class InterferenceGraph:
         print("Interference graph:")
         for var, neighbors in sorted(self.conflicts_list.items()):
             print(f"  {var}: {sorted(neighbors)}")
-        if self.colouring:
+        if hasattr(self, 'colouring') and self.colouring:
             print("Colouring:")
             for var in sorted(self.colouring):
                 r = self.colouring[var]
@@ -65,7 +65,7 @@ def build_interference_graph(instructions, live_on_exit):
     graph = InterferenceGraph()
 
     # Initialize live list with variables that were live
-    current_live = list(live_on_exit)
+    current_live = set(live_on_exit) #changed from list to set
 
     for var in current_live:
         graph.add_node(var)
