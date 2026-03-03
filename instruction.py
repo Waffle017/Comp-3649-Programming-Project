@@ -26,6 +26,9 @@ class Asm_Instruction:
         asm.opcode = opcode
         asm.dst = dst
         asm.src = src
+    def __str__(self):
+        # formats code into OPCODE src,dst
+        return f"{self.opcode}\t{self.src}, {self.dst}"
 
 
 def readIn(filename):

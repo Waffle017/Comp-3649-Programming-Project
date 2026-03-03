@@ -27,11 +27,11 @@ class InterferenceGraph:
 
     def colour_graph(self, num_registers=None):
         '''Assign each variable a register (colour) so no two neighbours share one.'''
-        self.colouring = {} #reset colours
-        for var in self.conflicts_list: # for each variable in the conflicts list
-            used = {self.colouring[n]  #look at the colours of the neighbours
-            for n in self.conflicts_list[var] #for each neighbour
-            if n in self.colouring} #if the neighbour is in the colouring
+        self.colouring = {}  # reset colours
+        for var in sorted(self.conflicts_list):  # deterministic order
+            used = {self.colouring[n]
+            for n in self.conflicts_list[var]
+            if n in self.colouring}
 
             colour = 0 #start with colour 0
             while colour in used: #while the colour is used
@@ -65,9 +65,9 @@ def build_interference_graph(instructions, live_on_exit):
     graph = InterferenceGraph()
 
     # Initialize live list with variables that were live
-    current_live = set(live_on_exit) #changed from list to set
+    current_live = set(live_on_exit)  # use set for membership, but iterate in fixed order
 
-    for var in current_live:
+    for var in sorted(current_live):
         graph.add_node(var)
 
     # Start loop for backwards iteration
@@ -75,7 +75,7 @@ def build_interference_graph(instructions, live_on_exit):
 
         # Find destination variable
         dest = instruction.dest
-        for live_var in current_live:
+        for live_var in sorted(current_live):
             graph.add_edge(dest, live_var)
         if dest in current_live:
             current_live.remove(dest)
