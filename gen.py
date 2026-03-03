@@ -9,6 +9,11 @@ def generate_assembly(intermediate_instructions, register_mapping):
     asm_output = []
 
     def format_operand(op):
+        # Numbers become immediates: 1 -> #1
+        if isinstance(op, int):
+            return f"#{op}"
+        
+        # Variables in registers: a -> R0, etc.
         reg_num = register_mapping.get(op)
         if reg_num is not None:
             return f"R{reg_num}"
@@ -31,7 +36,6 @@ def generate_assembly(intermediate_instructions, register_mapping):
         if dest_reg != src1_formatted:
             asm_output.append(Asm_Instruction("MOV", dest_reg, src1_formatted))
 
-        # If this is a binary operation, do the math
         if instr.op in opcode_map and instr.src2 is not None:
             src2_formatted = format_operand(instr.src2)
             opcode = opcode_map[instr.op]
