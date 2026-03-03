@@ -2,10 +2,8 @@ from scanner import Scanner
 from parser import Parser
 
 
-
-#test code: this is temporarily here to test scanner, uh claude did this part whoops 
 if __name__ == "__main__":
-    print("=== SCANNER TEST ===")
+    print("=== SCANNER TEST ===") #test scanner
     scanner = Scanner("programpara.txt")
     tokens = []
     while True:

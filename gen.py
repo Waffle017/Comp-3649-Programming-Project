@@ -65,7 +65,7 @@ def main():
     graph = build_interference_graph(instructions, live_vars)
 
     # Step 4: Graph Coloring (Register Allocation)
-    register_mapping = graph.colour_graph(num_registers=4) 
+    register_mapping = graph.colour_graph(num_registers=num_regs) 
 
     # Step 5: Code Generation
     # Pass the instructions and register mapping to build the assembly list
