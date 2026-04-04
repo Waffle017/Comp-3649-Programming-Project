@@ -6,6 +6,7 @@ module ThreeAddressInstruction
     TASequence,
     displayTASequence,
     liveDisplay,
+    makeTASequence,
     Operand(..),
     Opcode(..)
 )   
@@ -33,7 +34,8 @@ makeInstruction :: String -> Operand -> Opcode -> Operand -> ThreeAddressInstruc
 makeInstruction dst src1 opcode src2 = ThreeAddressInstruction { dst = dst, src1 = src1, op = opcode, src2 = src2 }
 
 -- Function that makes a TASequence
-makeTASequence :: 
+makeTASequence :: [ThreeAddressInstruction] -> [String] -> TASequence
+makeTASequence instr liveVars = (instr,liveVars)
 
 -- Function that displays a 3 address instruction to the display
 displayTASequence :: TASequence -> String
