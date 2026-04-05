@@ -6,13 +6,17 @@ module AssemblyInstruction
     AssemblyInstruction,
 
     Opcode(..),
-    Operand(..)
+    Operand(..),
+    ASMSequence,
+    makeAssembly,
+    asmSequence,
+    displayASMSequence
 
 
 )
 where
 
-import ThreeAddressInstruction(Operand(..))
+import ThreeAddressInstruction(Operand(..),convertSrc)
 
 data AssemblyInstruction = AssemblyInstruction
     {
@@ -25,7 +29,19 @@ data AssemblyInstruction = AssemblyInstruction
 data Opcode = MOV | ADD | SUB | MUL | DIV
     deriving(Show)
 
+type ASMSequence = [AssemblyInstruction]
+
 
 -- Function that makes a single assembly instruction
 makeAssembly :: Opcode -> Operand -> String -> AssemblyInstruction
+makeAssembly op src dst = AssemblyInstruction { op = op, src = src, dst = dst}
 
+asmSequence :: [AssemblyInstruction] -> ASMSequence
+asmSequence instr = instr
+
+-- Helper function for displayASMSequence
+singleASM :: AssemblyInstruction -> String
+singleASM instr = show(op instr) ++ " " ++ convertSrc (src instr) ++ ", " ++ dst instr
+
+displayASMSequence :: ASMSequence -> String
+displayASMSequence sequence = unlines (map singleASM sequence)

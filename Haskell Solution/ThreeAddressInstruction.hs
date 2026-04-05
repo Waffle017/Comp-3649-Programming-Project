@@ -8,7 +8,8 @@ module ThreeAddressInstruction
     liveDisplay,
     makeTASequence,
     Operand(..),
-    Opcode(..)
+    Opcode(..),
+    convertSrc
 )   
 where
 
