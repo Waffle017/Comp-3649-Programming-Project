@@ -1,0 +1,6 @@
+a = 100
+b = a
+c = b
+d = c
+e = d
+live: e

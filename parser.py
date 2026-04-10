@@ -19,13 +19,25 @@ class Parser:
         
     #Keep reading the tokens until LIVE
     def readIntermediateCode(self):
-        while self.curr_token.type != "LIVE":
+        self.live_on_exit = []
+        while self.curr_token is not None and self.curr_token.type != "LIVE":
             instruction = self.read3AddrInstruction() #get the single instruction
-            self.output.append(instruction) #add it to the output array 
+            self.output.append(instruction) #add it to the output array
+
+        if self.curr_token is None:
+            raise SyntaxError("Unexpected EOF: Missing 'live:' statement at the end of the file.")
         
-        if self.curr_token.type == "LIVE":
+        if self.curr_token.type is not None and self.curr_token.type == "LIVE":
             self.match("LIVE")
         
+            # Keep reading until the end of the file
+            while self.curr_token is not None and self.curr_token.type != "EOF":
+                if self.curr_token.type == "VAR":
+                    self.live_on_exit.append(self.curr_token.value)
+                    self.match("VAR")
+                else:
+                    self.curr_token = self.scanner.get_token()
+
         return self.output
 
     #read the single instruction
@@ -52,25 +64,25 @@ class Parser:
                     self.operant2 = self.curr_token.value
                 self.match("VAR")
             
-            if self.curr_token.type == "ASSIGN": #consume the equal
+            elif self.curr_token.type == "ASSIGN": #consume the equal
                 self.match("ASSIGN")
 
 
-            if self.curr_token.type == "INT":   #handle integer
-                count += 1
+            elif self.curr_token.type == "INT":   #handle integer
                 if count == 2:
                     self.operant1 = self.curr_token.value
                 else:
                     self.operant2 = self.curr_token.value
 
+                count += 1
                 self.match("INT")
     
-            if self.curr_token.type == "MINUS": #handle either NEG or SUB
+            elif self.curr_token.type == "MINUS": #handle either NEG or SUB
                 self.operator = self.curr_token.value
                 self.match("MINUS")
 
          
-            if self.curr_token.type in ["PLUS", "MUL", "DIV"]: #handle rest of operators 
+            elif self.curr_token.type in ["PLUS", "MUL", "DIV"]: #handle rest of operators 
                 if self.operator is None:
                     self.operator = self.curr_token.value
                 self.operator = self.curr_token.value

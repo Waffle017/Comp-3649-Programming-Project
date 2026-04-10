@@ -5,8 +5,16 @@ from allocator import build_interference_graph
 from instruction import Asm_Instruction 
 
 # Step 6: Code Generation function (Stub to fill in later)
-def generate_assembly(intermediate_instructions, register_mapping):
+def generate_assembly(intermediate_instructions, register_mapping, live_vars):
     asm_output = []
+    loaded_vars = set() # Construct a set to keep track of variables already loaded
+
+    spilled_vars = [var for var, reg in register_mapping.items() if reg is None]
+    if spilled_vars:
+        raise RuntimeError("Error: Spill detected, insufficient registers)")
+
+    def is_real_var(op):
+        return isinstance(op, str) and not (op.startswith('t') and len(op) > 1 and op[1:].isdigit())
 
     def format_operand(op):
         # Numbers become immediates: 1 -> #1
@@ -29,6 +37,14 @@ def generate_assembly(intermediate_instructions, register_mapping):
 
     # Loop through instructions
     for instr in intermediate_instructions:
+
+        # Checks loaded_vars for any memory of a variable, if has not been, load it into a register first
+        for src in [instr.src1, instr.src2]:
+            if is_real_var(src) and src not in loaded_vars:
+                src_reg = format_operand(src)
+                asm_output.append(Asm_Instruction("MOV", src_reg, src))
+                loaded_vars.add(src)
+
         dest_reg = format_operand(instr.dest)
         src1_formatted = format_operand(instr.src1)
 
@@ -40,6 +56,15 @@ def generate_assembly(intermediate_instructions, register_mapping):
             src2_formatted = format_operand(instr.src2)
             opcode = opcode_map[instr.op]
             asm_output.append(Asm_Instruction(opcode, dest_reg, src2_formatted))
+
+        # Add the destination variable to loaded_vars to indicate it's now in a register
+        if is_real_var(instr.dest):
+            loaded_vars.add(instr.dest)
+
+    for var in live_vars:
+        if is_real_var(var) and var in register_mapping:
+            reg_name = f"R{register_mapping[var]}"
+            asm_output.append(Asm_Instruction("MOV", var, reg_name))
 
     return asm_output
 
@@ -63,7 +88,7 @@ def main():
     # Step 2: Run the Front-End (Scanner and Parser)
     p = Parser(filename)
     instructions = p.readIntermediateCode()
-    live_vars = p.variables
+    live_vars = p.live_on_exit
 
     # Step 3: Run the Back-End (Liveness & Graph)
     graph = build_interference_graph(instructions, live_vars)
@@ -73,7 +98,7 @@ def main():
 
     # Step 5: Code Generation
     # Pass the instructions and register mapping to build the assembly list
-    asm_instructions = generate_assembly(instructions, register_mapping)
+    asm_instructions = generate_assembly(instructions, register_mapping, live_vars)
 
     # Step 6: The Final Output
     # Loop through your asm_instructions and print them to the console
