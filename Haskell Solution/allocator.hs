@@ -1,9 +1,18 @@
-module Allocator where
+module Allocator
+(
+    Colouring,
+    Instruction(..),
+    buildInterferenceGraph,
+    colourGraph
+
+)
+where
 
 import qualified Data.List as List
 import qualified Data.Map.Strict as Map
 import qualified Data.Set as Set
 import Data.Char (isAlpha, isAlphaNum)
+
 
 -- Equivalent to the Python Instruction objects consumed by
 -- build_interference_graph(instructions, live_on_exit).
@@ -125,8 +134,8 @@ formatMapping colouring =
 -- stdin line 2: live vars (space-separated)
 -- stdin line 3+: serialized instructions
 -- stdout: "var<TAB>reg" or "var<TAB>spill"
-main :: IO ()
-main = do
+runAllocator :: IO ()
+runAllocator = do
   content <- getContents -- Read full payload piped from gen.py.
   let ls = lines content -- Split into protocol lines.
   case ls of

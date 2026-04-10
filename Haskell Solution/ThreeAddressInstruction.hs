@@ -39,6 +39,8 @@ makeInstruction :: String -> Operand -> Opcode -> Operand -> ThreeAddressInstruc
 makeInstruction dst src1 opcode src2 = ThreeAddressInstruction { dst = dst, src1 = src1, op = opcode, src2 = src2 }
 
 -- Function that makes a TASequence
+-- [String]: a list of live variables 
+-- [ThreeAddressInstruction]: a list of TAI components
 makeTASequence :: [ThreeAddressInstruction] -> [String] -> TASequence
 makeTASequence instr liveVars = (instr,liveVars)
 

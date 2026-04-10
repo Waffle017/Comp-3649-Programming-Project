@@ -1,18 +1,20 @@
 module Codegen 
 (
     codeGen,
-    singleToList
+    singleToList,
+    convertTAI
 )
 
 
 where
 
-import Allocator (Colouring)
-import ThreeAddressInstruction (TASequence, ThreeAddressInstruction,dst, src1, src2, op, Opcode(..))
+import Allocator (Colouring, Instruction(..), colourGraph, buildInterferenceGraph)
+import ThreeAddressInstruction (TASequence, ThreeAddressInstruction,dst, src1, src2, op, Opcode(..), convertSrc)
 import AssemblyInstruction (ASMSequence, makeAssembly, Opcode(..))
 import qualified Data.Map.Strict as Map
 import qualified ThreeAddressInstruction as TAI
 import qualified AssemblyInstruction as ASM
+
 
 -- Function that takes a sequence of three address instructions and converts it to an assembly sequence
 codeGen :: TASequence -> Colouring -> ASMSequence 
@@ -24,8 +26,8 @@ singleToList :: ThreeAddressInstruction -> Colouring -> ASMSequence
 singleToList instr colour = case Map.lookup (dst instr) colour of 
     Just (Just r) ->
         let reg = "R" ++ show r
-            movInstr = makeAssembly MOV (src1 instr) reg
-            opInstr  = makeAssembly (convert (op instr)) (src2 instr) reg
+            movInstr = makeAssembly MOV (TAI.src1 instr) reg
+            opInstr  = makeAssembly (convert (op instr)) (TAI.src2 instr) reg
         in [movInstr, opInstr]
     Just Nothing -> []
     Nothing -> []
@@ -36,3 +38,11 @@ convert Add = ADD
 convert Sub = SUB
 convert Mul = MUL
 convert Div = DIV
+
+
+convertTAI :: ThreeAddressInstruction -> Allocator.Instruction
+convertTAI instr = Allocator.Instruction 
+    { Allocator.dest = dst instr
+    , Allocator.src1 = convertSrc (TAI.src1 instr)
+    , Allocator.src2 = Just (convertSrc (TAI.src2 instr))
+    }
