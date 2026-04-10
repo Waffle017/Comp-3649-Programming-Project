@@ -9,7 +9,11 @@ module ThreeAddressInstruction
     makeTASequence,
     Operand(..),
     Opcode(..),
-    convertSrc
+    convertSrc,
+    dst,
+    src1,
+    src2,
+    op
 )   
 where
 
