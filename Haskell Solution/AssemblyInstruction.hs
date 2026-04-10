@@ -33,9 +33,12 @@ type ASMSequence = [AssemblyInstruction]
 
 
 -- Function that makes a single assembly instruction
+-- purpose: assigns each input to its corresponding data 
 makeAssembly :: Opcode -> Operand -> String -> AssemblyInstruction
 makeAssembly op src dst = AssemblyInstruction { op = op, src = src, dst = dst}
 
+-- Function that makes a list of assembly instructions
+-- purpose: You have the list of all 
 asmSequence :: [AssemblyInstruction] -> ASMSequence
 asmSequence instr = instr
 
