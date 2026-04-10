@@ -2,7 +2,96 @@ import os
 import sys
 import shutil
 import subprocess
-from parser import Parser
+
+# TEMP switch for migration testing.
+# True  -> force parser.hs
+# False -> use parser.py
+USE_HASKELL_PARSER = True
+
+# TEMP switch for migration testing
+# True  -> force allocator.hs
+# False -> use allocator.py
+USE_HASKELL_ALLOCATOR = True
+
+
+def _backend_label(use_haskell, py_name, hs_name):
+    if use_haskell:
+        return f"Haskell ({hs_name})"
+    return f"Python ({py_name})"
+
+if not USE_HASKELL_PARSER:
+    from parser import Parser
+else:
+    from instruction import Instruction
+
+    class Parser:
+        """
+        Temporary parser adapter backed by parser.hs.
+        Flip USE_HASKELL_PARSER to False to quickly go back to parser.py.
+        """
+
+        def __init__(self, filename):
+            self.filename = filename
+            self.output = []
+            self.variables = []
+            self.live_on_exit = []
+            self.curr_token = None
+
+        def _parse_operand(self, raw):
+            if raw is None:
+                return None
+            if raw.lstrip("-").isdigit():
+                return int(raw)
+            return raw
+
+        def _run_haskell_parser(self):
+            parser_path = os.path.join(os.path.dirname(__file__), "parser.hs")
+            haskell_runner = shutil.which("runghc") or shutil.which("runhaskell")
+
+            if not haskell_runner or not os.path.isfile(parser_path):
+                raise RuntimeError("Haskell parser runtime unavailable: install runghc/runhaskell.")
+
+            result = subprocess.run(
+                [haskell_runner, parser_path, self.filename],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+
+            if result.returncode != 0:
+                message = (result.stderr or "Parser failed.").strip()
+                if "Missing 'live:' statement" in message:
+                    raise SyntaxError(message)
+                if "File not found" in message:
+                    # Keep parity with parser.py behavior in this repo.
+                    raise SyntaxError("Unexpected EOF: Missing 'live:' statement at the end of the file.")
+                raise ValueError(message)
+
+            return result.stdout.splitlines()
+
+        def readIntermediateCode(self):
+            self.output = []
+            self.variables = []
+            self.live_on_exit = []
+
+            for line in self._run_haskell_parser():
+                if not line.strip():
+                    continue
+
+                parts = line.split("\t")
+                record_type = parts[0]
+
+                if record_type == "INST" and len(parts) == 5:
+                    _, dest, src1, op, src2 = parts
+                    src1_parsed = self._parse_operand(src1)
+                    src2_parsed = None if src2 == "-" else self._parse_operand(src2)
+                    self.output.append(Instruction(dest, src1_parsed, op, src2_parsed))
+                elif record_type == "LIVE" and len(parts) == 2:
+                    self.live_on_exit.append(parts[1])
+                elif record_type == "VAR" and len(parts) == 2:
+                    self.variables.append(parts[1])
+
+            return self.output
 from allocator import build_interference_graph
 from instruction import Asm_Instruction 
 
@@ -83,7 +172,11 @@ def build_register_mapping(instructions, live_vars, num_regs):
     allocator_path = os.path.join(os.path.dirname(__file__), "allocator.hs")
     haskell_runner = shutil.which("runghc") or shutil.which("runhaskell")
 
-    if haskell_runner and os.path.isfile(allocator_path):
+    if USE_HASKELL_ALLOCATOR:
+        if not haskell_runner or not os.path.isfile(allocator_path):
+            raise RuntimeError("Haskell allocator runtime unavailable: install runghc/runhaskell.")
+        # Keep parity with allocator.py behavior (raises on undefined live vars).
+        build_interference_graph(instructions, live_vars)
         payload = _build_haskell_allocator_input(instructions, live_vars, num_regs)
         result = subprocess.run(
             [haskell_runner, allocator_path],
@@ -93,16 +186,19 @@ def build_register_mapping(instructions, live_vars, num_regs):
             check=False
         )
 
-        if result.returncode == 0:
-            mapping = {}
-            for line in result.stdout.splitlines():
-                if not line.strip():
-                    continue
-                var, _, value = line.partition("\t")
-                mapping[var] = None if value == "spill" else int(value)
-            return mapping
+        if result.returncode != 0:
+            message = (result.stderr or "Allocator failed.").strip()
+            raise RuntimeError(message)
 
-    # Fallback for environments without runghc/runhaskell.
+        mapping = {}
+        for line in result.stdout.splitlines():
+            if not line.strip():
+                continue
+            var, _, value = line.partition("\t")
+            mapping[var] = None if value == "spill" else int(value)
+        return mapping
+
+    # Python allocator path.
     graph = build_interference_graph(instructions, live_vars)
     return graph.colour_graph(num_registers=num_regs)
 
@@ -122,6 +218,9 @@ def main():
     if not os.path.isfile(filename):
         print(f"Error: Cannot read input file '{filename}'.")
         return
+
+    print(f"[backend] parser: {_backend_label(USE_HASKELL_PARSER, 'parser.py', 'parser.hs')}")
+    print(f"[backend] allocator: {_backend_label(USE_HASKELL_ALLOCATOR, 'allocator.py', 'allocator.hs')}")
 
     # Step 2: Run the Front-End (Scanner and Parser)
     p = Parser(filename)
