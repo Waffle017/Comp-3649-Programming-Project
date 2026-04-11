@@ -86,8 +86,12 @@ def main():
     
     filename = sys.argv[2]
     if not os.path.isfile(filename):
-        print(f"Error: Cannot read input file '{filename}'.")
-        return
+        candidate = os.path.join(os.path.dirname(os.path.abspath(__file__)), filename)
+        if os.path.isfile(candidate):
+            filename = candidate
+        else:
+            print(f"Error: Cannot read input file '{filename}'.")
+            return
 
     # Step 2: Run the Front-End (Scanner and Parser)
     p = Parser(filename)

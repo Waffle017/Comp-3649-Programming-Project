@@ -1,3 +1,6 @@
+import os
+
+
 class Instruction:
     def __init__(self, dest, src1, op, src2=None):
         # we initialize here guys like line.string = read input
@@ -32,11 +35,14 @@ class Asm_Instruction:
 
 
 def readIn(filename):
-    # file_path = f"/Users/scottlouden/Downloads/Github/Paradigm/{filename}"
     lines = []
-    
+    file_path = filename
+    if not os.path.isabs(file_path) and not os.path.isfile(file_path):
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        file_path = os.path.join(base_dir, filename)
+
     try:
-        with open(filename, 'r', encoding='utf-8') as file:
+        with open(file_path, 'r', encoding='utf-8') as file:
             for line in file:
                 if (line.strip() != ""):  # make sure we dont add empty lines
                     tokens = line.split()  # Split by spaces
@@ -44,14 +50,7 @@ def readIn(filename):
                         lines.append(token)  # Append tokens to list
                     lines.append("\n")  # Add empty string between each line to mark new line
     except FileNotFoundError:
-        print(f"File not found")
-        return None #idk if its NULL or Null or None doesn't matter much
+        print("File not found")
+        return None
 
     return lines
-
-
-
-lines = readIn("programpara.txt") # reads in the file, can be changed depending on txt file name
-print(lines) #error checking 
-
-
