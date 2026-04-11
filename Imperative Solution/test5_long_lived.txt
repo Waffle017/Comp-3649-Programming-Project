@@ -1,0 +1,8 @@
+long = 1 + 1
+s1 = 2 + 2
+t1 = s1 * 2
+s2 = t1 + 3
+t2 = s2 * 2
+s3 = t2 + 4
+final = long + s3
+live: final
