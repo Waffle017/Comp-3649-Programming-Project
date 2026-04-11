@@ -92,7 +92,20 @@ buildInterferenceGraph instructions liveOnExit =
                 (Set.insert s2v liveAfterSrc1, addNode s2v graphAfterSrc1) -- Python: add src2 to live + node when src2 is variable
               _ ->
                 (liveAfterSrc1, graphAfterSrc1) -- Python: skip missing/non-variable src2
-      in go rest liveAfterSrc2 graphAfterSrc2
+          -- Keep parity with the Python pipeline's observed behaviour:
+          -- variable src2 is treated as directly interfering with the destination,
+          -- and binary variable operands are also marked as mutually interfering.
+          graphAfterExtraEdges =
+            let withDestSrc2 =
+                  case src2 instr of
+                    Just s2v | isVariableName s2v -> addEdge d s2v graphAfterSrc2
+                    _ -> graphAfterSrc2
+            in if isVariableName (src1 instr)
+                 then case src2 instr of
+                        Just s2v | isVariableName s2v -> addEdge (src1 instr) s2v withDestSrc2
+                        _ -> withDestSrc2
+                 else withDestSrc2
+      in go rest liveAfterSrc2 graphAfterExtraEdges
 
 chooseColour :: Set.Set Int -> Maybe Int -> Maybe Int
 chooseColour used maybeLimit = go 0

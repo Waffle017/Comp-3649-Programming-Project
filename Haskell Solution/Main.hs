@@ -54,13 +54,8 @@ main = do
     let graph = buildInterferenceGraph allocatorInstrs (snd taiSequence)
     let colouring = colourGraph graph (Just numRegisters)
 
-    putStrLn "=== Three Address Code ==="
-    putStrLn $ displayTASequence taiSequence
 
-    putStrLn "=== Register Allocation ==="
-    print colouring
 
-    putStrLn "=== Assembly Output ==="
     if hasSpills colouring
         then putStrLn "Error: Register allocation failed (spill occurred). Cannot generate assembly."
         else putStr $ displayASMSequence (codeGen taiSequence colouring)
