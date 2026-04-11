@@ -64,6 +64,16 @@ def build_interference_graph(instructions, live_on_exit):
     '''
     graph = InterferenceGraph()
 
+    seen_vars = set()
+    for instr in instructions:
+        if type(instr.dest) is str: seen_vars.add(instr.dest)
+        if type(instr.src1) is str: seen_vars.add(instr.src1)
+        if instr.src2 and type(instr.src2) is str: seen_vars.add(instr.src2)
+
+    for var in live_on_exit:
+        if var not in seen_vars:
+            raise NameError(f"Undefined variable '{var}' listed in live statement.")
+
     # Initialize live list with variables that were live
     current_live = set(live_on_exit)  # use set for membership, but iterate in fixed order
 
@@ -85,7 +95,14 @@ def build_interference_graph(instructions, live_on_exit):
             current_live.add(instruction.src1)
             graph.add_node(instruction.src1)
         if instruction.src2 and type(instruction.src2) is str:
+            graph.add_edge(dest, instruction.src2)
             current_live.add(instruction.src2)
             graph.add_node(instruction.src2)
+
+    graph.live_on_entry = current_live
+    live_list = list(current_live)
+    for i in range(len(live_list)):
+        for j in range(i + 1, len(live_list)):
+            graph.add_edge(live_list[i], live_list[j])
 
     return graph
