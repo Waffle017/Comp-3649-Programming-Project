@@ -1,5 +1,10 @@
 import unittest
 import os
+import sys
+
+# Ensure the current directory is in the Python path
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 from allocator import build_interference_graph
 from gen import Parser, build_register_mapping, generate_assembly
 
