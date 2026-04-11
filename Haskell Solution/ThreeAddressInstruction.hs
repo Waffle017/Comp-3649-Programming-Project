@@ -61,7 +61,7 @@ singleTA instr = dst instr ++ " = " ++ convertSrc (src1 instr) ++ " " ++ convert
 -- purpose: converts src from the operand type to a string
 convertSrc :: Operand -> String
 convertSrc (Var x) = x        -- if either src is a string
-convertSrc (Num y) = show(y)  -- if either src is a number
+convertSrc (Num y) = "#" ++ show(y)  -- if either src is a number
 
 -- Helper function that formats opcode properly
 -- purpose: converts all opcodes into their corresponding strings

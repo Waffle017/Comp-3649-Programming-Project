@@ -4,7 +4,16 @@
 -- This is a direct Haskell version of our Python parser.
 -- It keeps the same behavior but prints a tab-delimited format that Python reads.
 
-module Main where
+module Parser 
+(
+  parseProgram,
+  ParseResult,
+  ParsedInstruction(..),
+  prInstructions,
+  prLiveOnExit,
+  Operand(..)
+)
+where
 
 import Control.Exception (IOException, try)
 import Data.Char (isSpace)
@@ -153,6 +162,7 @@ renderResult result =
     renderOperand (OpVar v) = v
     renderOperand (OpInt n) = show n
 
+{-
 -- Small CLI entrypoint.
 -- Usage: runghc parser.hs <filename>
 main :: IO ()
@@ -175,3 +185,5 @@ main = do
     _ -> do
       hPutStrLn stderr "Usage: runghc parser.hs <filename>"
       exitFailure
+
+-}

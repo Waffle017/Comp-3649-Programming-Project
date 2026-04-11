@@ -1,0 +1,14 @@
+MOV a, R0
+ADD #1, R0
+MOV a, R2
+MUL #4, R2
+MOV t1, R2
+ADD #1, R2
+MOV a, R0
+MUL #3, R0
+MOV t2, R0
+SUB t3, R0
+MOV b, R0
+DIV #2, R0
+MOV c, R0
+ADD t5, R0
