@@ -1,7 +1,5 @@
 import os
 import sys
-import shutil
-import subprocess
 from parser import Parser
 from allocator import build_interference_graph
 from instruction import Asm_Instruction 
@@ -70,39 +68,7 @@ def generate_assembly(intermediate_instructions, register_mapping, live_vars):
 
     return asm_output
 
-def _encode_instruction_for_haskell(instr):
-    src2 = "-" if instr.src2 is None else str(instr.src2)
-    return f"{instr.dest}\t{instr.src1}\t{instr.op}\t{src2}"
-
-def _build_haskell_allocator_input(instructions, live_vars, num_regs):
-    lines = [str(num_regs), " ".join(str(v) for v in live_vars)]
-    lines.extend(_encode_instruction_for_haskell(instr) for instr in instructions)
-    return "\n".join(lines) + "\n"
-
 def build_register_mapping(instructions, live_vars, num_regs):
-    allocator_path = os.path.join(os.path.dirname(__file__), "allocator.hs")
-    haskell_runner = shutil.which("runghc") or shutil.which("runhaskell")
-
-    if haskell_runner and os.path.isfile(allocator_path):
-        payload = _build_haskell_allocator_input(instructions, live_vars, num_regs)
-        result = subprocess.run(
-            [haskell_runner, allocator_path],
-            input=payload,
-            capture_output=True,
-            text=True,
-            check=False
-        )
-
-        if result.returncode == 0:
-            mapping = {}
-            for line in result.stdout.splitlines():
-                if not line.strip():
-                    continue
-                var, _, value = line.partition("\t")
-                mapping[var] = None if value == "spill" else int(value)
-            return mapping
-
-    # Fallback for environments without runghc/runhaskell.
     graph = build_interference_graph(instructions, live_vars)
     return graph.colour_graph(num_registers=num_regs)
 
@@ -128,7 +94,7 @@ def main():
     instructions = p.readIntermediateCode()
     live_vars = p.live_on_exit
 
-    # Step 3/4: Register Allocation via Haskell allocator
+    # Step 3/4: Register Allocation via Python allocator
     register_mapping = build_register_mapping(instructions, live_vars, num_regs)
 
     # Step 5: Code Generation

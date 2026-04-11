@@ -1,8 +1,7 @@
 import unittest
 import os
-from parser import Parser
 from allocator import build_interference_graph
-from gen import generate_assembly
+from gen import Parser, build_register_mapping, generate_assembly
 
 def run_compiler_pipeline(filepath, num_regs=4):
     """
@@ -14,8 +13,7 @@ def run_compiler_pipeline(filepath, num_regs=4):
     live_vars = p.live_on_exit
 
     # 2. Allocate Registers
-    graph = build_interference_graph(instructions, live_vars)
-    register_mapping = graph.colour_graph(num_registers=num_regs)
+    register_mapping = build_register_mapping(instructions, live_vars, num_regs)
 
     # 3. Generate Assembly
     asm_instructions = generate_assembly(instructions, register_mapping, live_vars)

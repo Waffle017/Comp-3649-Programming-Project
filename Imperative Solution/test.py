@@ -1,5 +1,5 @@
 from scanner import Scanner
-from parser import Parser
+from gen import Parser
 
 
 if __name__ == "__main__":
@@ -16,21 +16,11 @@ if __name__ == "__main__":
     print("\n=== PARSER TEST ===")
     try:
         parser = Parser("programpara.txt")
-        print(f"Parser initialized. Current token: {parser.curr_token}")
-        
-        # Add debug to readIntermediateCode
-        while parser.curr_token.type != "LIVE":
-            print(f"\nProcessing instruction, current token: {parser.curr_token}")
-            instruction = parser.read3AddrInstruction()
-            print(f"Got instruction: {instruction}")
-            parser.output.append(instruction)
+        instructions = parser.readIntermediateCode()
         
         print("\nParsed Instructions:")
-        for i, instruction in enumerate(parser.output):
+        for i, instruction in enumerate(instructions):
             print(f"Instruction {i+1}: {instruction}")
-            if len(instruction) == 4:
-                dst, op1, operator, op2 = instruction
-                print(f"  {dst} = {op1} {operator} {op2}")
 
         print("\nVariables found:")
         print(parser.variables)

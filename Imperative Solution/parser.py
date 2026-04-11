@@ -1,4 +1,3 @@
-
 from scanner import Scanner
 from instruction import Instruction
 
@@ -13,10 +12,9 @@ class Parser:
     def match(self, expected_type): 
         if self.curr_token.type == expected_type:
             self.curr_token = self.scanner.get_token()
-
         else:
             raise ValueError("Error")
-        
+
     #Keep reading the tokens until LIVE
     def readIntermediateCode(self):
         self.live_on_exit = []
@@ -67,7 +65,6 @@ class Parser:
             elif self.curr_token.type == "ASSIGN": #consume the equal
                 self.match("ASSIGN")
 
-
             elif self.curr_token.type == "INT":   #handle integer
                 if count == 2:
                     self.operant1 = self.curr_token.value
@@ -80,7 +77,6 @@ class Parser:
             elif self.curr_token.type == "MINUS": #handle either NEG or SUB
                 self.operator = self.curr_token.value
                 self.match("MINUS")
-
          
             elif self.curr_token.type in ["PLUS", "MUL", "DIV"]: #handle rest of operators 
                 if self.operator is None:
